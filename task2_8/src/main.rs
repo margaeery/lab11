@@ -1,30 +1,9 @@
-use axum::{
-    extract::State,
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
-    Json, Router,
-};
-use serde_json::Value;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
+use rust_server::create_app;
 use tokio::signal;
-
-struct AppState {
-    request_count: AtomicU64,
-}
 
 #[tokio::main]
 async fn main() {
-    let state = Arc::new(AppState {
-        request_count: AtomicU64::new(0),
-    });
-
-    let app = Router::new()
-        .route("/health", get(health))
-        .route("/", get(root))
-        .route("/data", post(data))
-        .with_state(state);
+    let app = create_app();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
         .await
@@ -61,20 +40,4 @@ async fn shutdown_signal() {
         _ = ctrl_c => {},
         _ = terminate => {},
     }
-}
-
-async fn health() -> impl IntoResponse {
-    (StatusCode::OK, Json(serde_json::json!({"status": "ok"})))
-}
-
-async fn root() -> impl IntoResponse {
-    (StatusCode::OK, Json(serde_json::json!({"message": "Hello, World!"})))
-}
-
-async fn data(
-    State(state): State<Arc<AppState>>,
-    Json(body): Json<Value>,
-) -> impl IntoResponse {
-    state.request_count.fetch_add(1, Ordering::SeqCst);
-    (StatusCode::OK, Json(body))
 }
