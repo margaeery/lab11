@@ -119,12 +119,37 @@ func HealthHandler(c *gin.Context) {
 }
 
 type ConfigResponse struct {
-	AppName      string `json:"app_name"`
-	Env          string `json:"env"`
-	Port         string `json:"port"`
-	MaxBodySize  int    `json:"max_body_size_mb"`
-	ReadTimeout  string `json:"read_timeout"`
-	WriteTimeout string `json:"write_timeout"`
+	AppName      string            `json:"app_name"`
+	Env          string            `json:"env"`
+	Port         string            `json:"port"`
+	MaxBodySize  int               `json:"max_body_size_mb"`
+	ReadTimeout  string            `json:"read_timeout"`
+	WriteTimeout string            `json:"write_timeout"`
+	EnvVars      map[string]string `json:"env_vars"`
+}
+
+var sensitiveKeys = map[string]bool{
+	"DB_PASSWORD":  true,
+	"API_KEY":      true,
+	"SECRET_KEY":   true,
+	"AUTH_TOKEN":   true,
+	"PRIVATE_KEY":  true,
+}
+
+func getConfigEnvVars() map[string]string {
+	keys := []string{"APP_ENV", "APP_NAME", "PORT", "MAX_BODY_SIZE", "READ_TIMEOUT", "WRITE_TIMEOUT", "DB_PASSWORD", "API_KEY", "SECRET_KEY"}
+	result := make(map[string]string)
+	for _, key := range keys {
+		val := os.Getenv(key)
+		if val == "" {
+			continue
+		}
+		if sensitiveKeys[key] {
+			val = "****"
+		}
+		result[key] = val
+	}
+	return result
 }
 
 func ConfigHandler(c *gin.Context, cfg Config) {
@@ -135,6 +160,7 @@ func ConfigHandler(c *gin.Context, cfg Config) {
 		MaxBodySize:  cfg.MaxBodySize,
 		ReadTimeout:  cfg.ReadTimeout.String(),
 		WriteTimeout: cfg.WriteTimeout.String(),
+		EnvVars:      getConfigEnvVars(),
 	})
 }
 
