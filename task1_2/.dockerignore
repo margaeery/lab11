@@ -1,0 +1,14 @@
+.git
+.gitignore
+*.exe
+*.pdb
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+*.swo
+qwen.md
+.qwen/
+README.md
+PROMPT_LOG.md
