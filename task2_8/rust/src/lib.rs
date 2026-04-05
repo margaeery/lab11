@@ -1,6 +1,6 @@
 use axum::{
     extract::State,
-    http::StatusCode,
+    http::{Method, StatusCode},
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
@@ -26,18 +26,22 @@ pub fn create_app() -> Router {
 }
 
 pub async fn health() -> impl IntoResponse {
+    tracing::info!("GET /health -> 200");
     (StatusCode::OK, Json(serde_json::json!({"status": "ok"})))
 }
 
 pub async fn root() -> impl IntoResponse {
+    tracing::info!("GET / -> 200");
     (StatusCode::OK, Json(serde_json::json!({"message": "Hello, World!"})))
 }
 
 pub async fn data(
     State(state): State<Arc<AppState>>,
+    method: Method,
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
     state.request_count.fetch_add(1, Ordering::SeqCst);
+    tracing::info!("{} /data -> 200", method);
     (StatusCode::OK, Json(body))
 }
 

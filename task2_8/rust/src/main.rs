@@ -1,21 +1,30 @@
 use rust_server::create_app;
 use tokio::signal;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "info".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     let app = create_app();
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080")
         .await
         .unwrap();
-    println!("listening on 0.0.0.0:8080");
+    tracing::info!("listening on 0.0.0.0:8080");
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 
-    println!("server stopped");
+    tracing::info!("server stopped");
 }
 
 async fn shutdown_signal() {
