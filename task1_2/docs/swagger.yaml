@@ -1,0 +1,106 @@
+basePath: /
+definitions:
+  main.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  main.HealthResponse:
+    properties:
+      status:
+        type: string
+    type: object
+  main.UserInput:
+    properties:
+      age:
+        example: 25
+        type: integer
+      name:
+        example: Alice
+        type: string
+    required:
+    - age
+    - name
+    type: object
+  main.UserResponse:
+    properties:
+      message:
+        type: string
+      user:
+        $ref: '#/definitions/main.UserInput'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API with Gin and Swagger
+  title: Go API
+  version: "1.0"
+paths:
+  /echo:
+    post:
+      consumes:
+      - application/json
+      description: Returns the received JSON body
+      parameters:
+      - description: Any JSON body
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Echo request body
+      tags:
+      - echo
+  /health:
+    get:
+      description: Returns service health status
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.HealthResponse'
+      summary: Health check
+      tags:
+      - health
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: Creates a user with name and age validation
+      parameters:
+      - description: User data
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/main.UserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Create a user
+      tags:
+      - user
+swagger: "2.0"
