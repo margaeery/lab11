@@ -119,13 +119,7 @@ func HealthHandler(c *gin.Context) {
 }
 
 type ConfigResponse struct {
-	AppName      string            `json:"app_name"`
-	Env          string            `json:"env"`
-	Port         string            `json:"port"`
-	MaxBodySize  int               `json:"max_body_size_mb"`
-	ReadTimeout  string            `json:"read_timeout"`
-	WriteTimeout string            `json:"write_timeout"`
-	EnvVars      map[string]string `json:"env_vars"`
+	EnvVars map[string]string `json:"env_vars"`
 }
 
 var sensitiveKeys = map[string]bool{
@@ -136,31 +130,34 @@ var sensitiveKeys = map[string]bool{
 	"PRIVATE_KEY":  true,
 }
 
-func getConfigEnvVars() map[string]string {
-	keys := []string{"APP_ENV", "APP_NAME", "PORT", "MAX_BODY_SIZE", "READ_TIMEOUT", "WRITE_TIMEOUT", "DB_PASSWORD", "API_KEY", "SECRET_KEY"}
-	result := make(map[string]string)
-	for _, key := range keys {
-		val := os.Getenv(key)
-		if val == "" {
-			continue
-		}
-		if sensitiveKeys[key] {
-			val = "****"
-		}
-		result[key] = val
+func getConfigEnvVars(cfg Config) map[string]string {
+	result := map[string]string{
+		"APP_ENV":       cfg.Env,
+		"APP_NAME":      cfg.AppName,
+		"PORT":          cfg.Port,
+		"MAX_BODY_SIZE": strconv.Itoa(cfg.MaxBodySize),
+		"READ_TIMEOUT":  cfg.ReadTimeout.String(),
+		"WRITE_TIMEOUT": cfg.WriteTimeout.String(),
 	}
+
+	sensitive := map[string]string{
+		"DB_PASSWORD":  os.Getenv("DB_PASSWORD"),
+		"API_KEY":      os.Getenv("API_KEY"),
+		"SECRET_KEY":   os.Getenv("SECRET_KEY"),
+	}
+
+	for k, v := range sensitive {
+		if v != "" {
+			result[k] = "****"
+		}
+	}
+
 	return result
 }
 
 func ConfigHandler(c *gin.Context, cfg Config) {
 	c.JSON(http.StatusOK, ConfigResponse{
-		AppName:      cfg.AppName,
-		Env:          cfg.Env,
-		Port:         cfg.Port,
-		MaxBodySize:  cfg.MaxBodySize,
-		ReadTimeout:  cfg.ReadTimeout.String(),
-		WriteTimeout: cfg.WriteTimeout.String(),
-		EnvVars:      getConfigEnvVars(),
+		EnvVars: getConfigEnvVars(cfg),
 	})
 }
 

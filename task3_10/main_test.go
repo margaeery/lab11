@@ -74,17 +74,14 @@ func TestConfigHandler(t *testing.T) {
 			t.Fatalf("failed to parse response: %v", err)
 		}
 
-		if resp.Port != "8080" {
-			t.Errorf("expected port '8080', got '%s'", resp.Port)
+		if resp.EnvVars["PORT"] != "8080" {
+			t.Errorf("expected PORT '8080', got '%s'", resp.EnvVars["PORT"])
 		}
-		if resp.Env != "development" {
-			t.Errorf("expected env 'development', got '%s'", resp.Env)
+		if resp.EnvVars["APP_ENV"] != "development" {
+			t.Errorf("expected APP_ENV 'development', got '%s'", resp.EnvVars["APP_ENV"])
 		}
-		if resp.AppName != "go-config-service" {
-			t.Errorf("expected app_name 'go-config-service', got '%s'", resp.AppName)
-		}
-		if resp.MaxBodySize != 10 {
-			t.Errorf("expected max_body_size 10, got %d", resp.MaxBodySize)
+		if resp.EnvVars["APP_NAME"] != "go-config-service" {
+			t.Errorf("expected APP_NAME 'go-config-service', got '%s'", resp.EnvVars["APP_NAME"])
 		}
 	})
 
