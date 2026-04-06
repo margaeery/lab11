@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: go-watchtower-app
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --interval 30 --cleanup --label-enable
+    environment:
+      - DOCKER_API_VERSION=1.44
+    restart: unless-stopped

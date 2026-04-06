@@ -387,3 +387,101 @@ rm task4_2/server
 ```
 
 2. **Задание 8:** Настроить автоматическое обновление контейнеров (watchtower).
+
+**Эндпоинты:**
+
+- `GET /version` — возвращает текущую версию приложения
+
+**Запуск без Docker:**
+
+```bash
+cd task5_8
+go run main.go
+```
+
+**Запуск тестов:**
+
+```bash
+cd task5_8
+go test -v ./...
+```
+
+**Сборка Docker-образа:**
+
+```bash
+cd task5_8
+docker build -t lab11-go-watchtower .
+```
+
+**Запуск через Docker Compose (приложение + watchtower):**
+
+```bash
+cd task5_8
+docker compose up -d
+```
+
+**Проверка эндпоинта:**
+
+```bash
+curl http://localhost:8080/version
+```
+
+**Проверка статуса контейнеров:**
+
+```bash
+docker compose -f task5_8/docker-compose.yml ps
+```
+
+**Просмотр логов watchtower:**
+
+```bash
+docker compose -f task5_8/docker-compose.yml logs watchtower
+```
+
+**Остановка:**
+
+```bash
+cd task5_8
+docker compose down
+```
+
+**Остановка с удалением образов:**
+
+```bash
+cd task5_8
+docker compose down --rmi all
+```
+
+**Как работает Watchtower:**
+
+Watchtower проверяет наличие новых образов каждые **30 секунд**. Если в реестре появляется новая версия образа с меткой `com.centurylinklabs.watchtower.enable=true`, контейнер автоматически обновляется и перезапускается.
+
+**Проверка обновления версии:**
+
+1. Убедитесь, что compose запущен:
+```bash
+cd task5_8
+docker compose up -d
+```
+
+2. Измените версию в `main.go`:
+```go
+c.JSON(200, gin.H{
+    "version": "2.0.0",
+})
+```
+
+3. Пересоберите и обновите образ:
+```bash
+cd task5_8
+docker compose build app
+docker compose up -d app
+```
+
+4. Проверьте, что версия обновилась:
+```bash
+curl http://localhost:8080/version
+# Ожидаемый ответ: {"version":"2.0.0"}
+```
+
+5. Watchtower автоматически обнаружит новый образ и обновит контейнер при следующей проверке (каждые 30 секунд).
