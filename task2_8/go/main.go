@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,7 +14,9 @@ func main() {
 	r.GET("/", RootHandler)
 	r.POST("/data", DataHandler)
 
-	r.Run(":8080")
+	if err := r.Run(":8080"); err != nil {
+		log.Fatalf("server failed: %v", err)
+	}
 }
 
 func HealthHandler(c *gin.Context) {

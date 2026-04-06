@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -27,7 +28,7 @@ func main() {
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			gin.DefaultWriter.Write([]byte("server error: " + err.Error()))
+			log.Fatalf("server error: %v", err)
 		}
 	}()
 
@@ -39,6 +40,6 @@ func main() {
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		gin.DefaultWriter.Write([]byte("server forced to shutdown: " + err.Error()))
+		log.Fatalf("server forced to shutdown: %v", err)
 	}
 }
