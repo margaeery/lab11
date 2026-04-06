@@ -279,6 +279,111 @@ docker images lab11-go-config
 
 ### Повышенная сложность:
 
-1. **Задание 2:** Собрать Rust-приложение с поддержкой musl для полностью статической сборки. 
+1. **Задание 2:** Собрать Rust-приложение с поддержкой musl для полностью статической сборки.
 
-2. **Задание 8:** Настроить автоматическое обновление контейнеров (watchtower). 
+**Эндпоинты:**
+
+- `GET /health` — проверка статуса
+- `GET /info` — информация о сервисе
+- `GET /hello` — приветственное сообщение
+
+**Запуск без Docker:**
+
+```bash
+cd task4_2
+cargo run
+```
+
+**Запуск тестов:**
+
+```bash
+cd task4_2
+cargo test
+```
+
+**Сборка Docker-образа (static musl):**
+
+```bash
+cd task4_2
+docker build -t rust-web-server .
+```
+
+**Запуск контейнера:**
+
+```bash
+docker run -d --name rust-server -p 8080:8080 rust-web-server
+```
+
+**Проверка эндпоинтов:**
+
+```bash
+curl http://localhost:8080/health
+curl http://localhost:8080/info
+curl http://localhost:8080/hello
+```
+
+**Проверка статуса:**
+
+```bash
+docker ps
+```
+
+**Просмотр логов:**
+
+```bash
+docker logs rust-server
+```
+
+**Остановка контейнера:**
+
+```bash
+docker stop rust-server
+docker rm rust-server
+```
+
+**Удаление образа:**
+
+```bash
+docker rmi rust-web-server
+```
+
+**Просмотр размера образа:**
+
+```bash
+docker images rust-web-server
+```
+
+**Проверка, что бинарник статический (без динамических зависимостей):**
+
+1. Извлечь бинарник из образа:
+```bash
+docker create --name temp rust-web-server
+docker cp temp:/server task4_2/server
+docker rm temp
+```
+
+2. Запустить Alpine-контейнер для проверки:
+```bash
+docker run -d --name check-runner rust:alpine tail -f /dev/null
+docker cp task4_2/server check-runner:/server
+docker exec check-runner apk add --no-cache file musl-dev
+docker exec check-runner file /server
+docker exec check-runner sh -c "ldd /server 2>&1 || echo 'STATIC: no dynamic dependencies'"
+```
+
+3. Ожидаемый результат `file`:
+```
+/server: ELF 64-bit LSB pie executable, x86-64, version 1 (SYSV), static-pie linked, stripped
+```
+
+Ключевая фраза — **`static-pie linked`** — подтверждает, что бинарник полностью статический.
+
+Команда `ldd` либо выдаст `not a dynamic executable`, либо покажет только `/lib/ld-musl-x86_64.so.1` (встроенный musl loader).
+
+4. Очистка:
+```bash
+docker rm -f check-runner
+rm task4_2/server
+```
+
+2. **Задание 8:** Настроить автоматическое обновление контейнеров (watchtower).
