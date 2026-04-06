@@ -72,9 +72,6 @@ func main() {
 
 	r := gin.Default()
 
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
-
 	r.GET("/health", HealthHandler)
 	r.GET("/config", func(c *gin.Context) {
 		ConfigHandler(c, cfg)

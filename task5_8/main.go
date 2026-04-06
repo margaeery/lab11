@@ -12,14 +12,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func VersionHandler(c *gin.Context) {
+	c.JSON(200, gin.H{
+		"version": "1.0.0",
+	})
+}
+
 func main() {
 	r := gin.Default()
 
-	r.GET("/version", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"version": "1.0.0",
-		})
-	})
+	r.GET("/version", VersionHandler)
 
 	srv := &http.Server{
 		Addr:    ":8080",

@@ -1,28 +1,16 @@
 use axum::{
-    extract::State,
-    http::{Method, StatusCode},
+    http::StatusCode,
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
 use serde_json::Value;
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
-
-pub struct AppState {
-    pub request_count: AtomicU64,
-}
 
 pub fn create_app() -> Router {
-    let state = Arc::new(AppState {
-        request_count: AtomicU64::new(0),
-    });
-
     Router::new()
         .route("/health", get(health))
         .route("/", get(root))
         .route("/data", post(data))
-        .with_state(state)
 }
 
 pub async fn health() -> impl IntoResponse {
@@ -36,12 +24,9 @@ pub async fn root() -> impl IntoResponse {
 }
 
 pub async fn data(
-    State(state): State<Arc<AppState>>,
-    method: Method,
     Json(body): Json<Value>,
 ) -> impl IntoResponse {
-    state.request_count.fetch_add(1, Ordering::SeqCst);
-    tracing::info!("{} /data -> 200", method);
+    tracing::info!("POST /data -> 200");
     (StatusCode::OK, Json(body))
 }
 

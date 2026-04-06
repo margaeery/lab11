@@ -13,11 +13,7 @@ func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 
-	r.GET("/version", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"version": "1.0.0",
-		})
-	})
+	r.GET("/version", VersionHandler)
 
 	return r
 }
